@@ -19,8 +19,14 @@ const tokenExtractor = (req, res, next) => {
     next()
 }
 
+const blogFinder = async (req, res, next) => {
+    req.blog = await Blog.findByPk(req.params.id)
+    next()
+}
+
 router.get('/', async (req, res) => {
     const blogs = await Blog.findAll({
+        attributes: { exclude: ['userId'] },
         include: {
           model: User
         }
@@ -38,23 +44,22 @@ router.post('/', tokenExtractor, async (req, res, next) => {
     }
 })
 
-router.delete('/:id', async (req, res, next) => {
+router.delete('/:id', [tokenExtractor, blogFinder], async (req, res, next) => {
     try {
-        await Blog.destroy({
-            where: {
-              id: req.params.id
-            }
-        })
+        const user = await User.findByPk(req.decodedToken.id)
+        const blog = req.blog
+
+        if (!user) return res.status(401).end()
+        if (blog && user.id !== blog.userId) {
+            return res.status(401).json({ error: 'user not authorised to perform this action' })
+        }
+        
+        if (blog) await blog.destroy()
         res.status(204).end()
     } catch(error) {
         next(error)
     }
 })
-
-const blogFinder = async (req, res, next) => {
-    req.blog = await Blog.findByPk(req.params.id)
-    next()
-}
 
 router.put('/:id', blogFinder, async (req, res, next) => {
     if (req.blog) {
