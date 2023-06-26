@@ -1,5 +1,6 @@
 const router = require('express').Router()
 const { Blog, User, ReadingList } = require('../models')
+const { tokenExtractor } = require('../util/middleware')
 
 router.post('/', async (req, res, next) => {
     try {
@@ -15,6 +16,35 @@ router.post('/', async (req, res, next) => {
         res.json(readingList)
     } catch(error) {
         next(error)
+    }
+})
+
+router.put('/:id', tokenExtractor, async (req, res, next) => {
+    let readingList = null
+
+    try {
+        readingList = await ReadingList.findByPk(req.params.id)
+    } catch (error) {
+        next(error)
+    }
+
+    const user = await User.findByPk(req.decodedToken.id)
+
+    if (!user || (readingList && user.id !== readingList.userId)) {
+        return res.status(401).json({ error: 'not authorised to perform this action' })
+    }
+
+    if (readingList) {
+        try {
+            if (!req.body.read && req.body.read !== false) throw Error('read not found in request body')
+            readingList.read = req.body.read
+            await readingList.save()
+            res.json(readingList)
+        } catch(error) {
+            next(error)
+        }
+    } else {
+        res.status(404).end()
     }
 })
 

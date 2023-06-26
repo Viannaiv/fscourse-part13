@@ -20,7 +20,8 @@ const errorHandler = (error, req, res, next) => {
  	} else if (error.name === 'SequelizeUniqueConstraintError') {
 		return res.status(400).json({ error })
  	} else if (error.message === 'likes not found in request body'
-		|| error.message === 'name not found in request body') {
+		|| error.message === 'name not found in request body'
+		|| error.message ==='read not found in request body') {
 		return res.status(400).json({ error: error.message })
 	}
 	
