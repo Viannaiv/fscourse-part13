@@ -12,7 +12,7 @@ const errorHandler = (error, req, res, next) => {
 	console.error(error.name, ':', error.message)
   
 	if (error.name === 'SequelizeValidationError') {
-	  	return res.status(400).json({ error })
+	  	return res.status(400).json({ error: error.message })
 	} else if (error.name === 'SequelizeDatabaseError') {
 		return res.status(400).json({ error })
  	} else if (error.name === 'SequelizeUniqueConstraintError') {
