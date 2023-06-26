@@ -5,6 +5,8 @@ const { PORT } = require('./util/config')
 const { connectToDatabase } = require('./util/db')
 
 const blogsRouter = require('./controllers/blogs')
+const usersRouter = require('./controllers/users')
+const loginRouter = require('./controllers/login')
 
 const errorHandler = (error, req, res, next) => {
 	console.error(error.name, ':', error.message)
@@ -13,7 +15,10 @@ const errorHandler = (error, req, res, next) => {
 	  	return res.status(400).json({ error })
 	} else if (error.name === 'SequelizeDatabaseError') {
 		return res.status(400).json({ error })
- 	} else if (error.message === 'likes not found in request body') {
+ 	} else if (error.name === 'SequelizeUniqueConstraintError') {
+		return res.status(400).json({ error })
+ 	} else if (error.message === 'likes not found in request body'
+		|| error.message === 'name not found in request body') {
 		return res.status(400).json({ error: error.message })
 	}
 	
@@ -21,7 +26,11 @@ const errorHandler = (error, req, res, next) => {
 }
 
 app.use(express.json())
+
 app.use('/api/blogs', blogsRouter)
+app.use('/api/users', usersRouter)
+app.use('/api/login', loginRouter)
+
 app.use(errorHandler)
 
 const start = async () => {
