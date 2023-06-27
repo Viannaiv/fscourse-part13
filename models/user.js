@@ -18,8 +18,13 @@ User.init({
     unique: true,
     allowNull: false,
     validate: {
-        isEmail: true
+      isEmail: true
     }
+  },
+  disabled: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: false
   }
 }, {
   sequelize,
